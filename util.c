@@ -33,11 +33,11 @@ static const char reverse_table[128] = {
 #define R3(v,w,x,y,z,i) z+=(((w|x)&y)|(w&x))+blk(i)+0x8F1BBCDC+rol(v,5);w=rol(w,30);
 #define R4(v,w,x,y,z,i) z+=(w^x^y)+blk(i)+0xCA62C1D6+rol(v,5);w=rol(w,30);
 
-uint8_t *base64_encode(uint8_t *bindata, int32_t inlen, uint8_t *out, int32_t *outlen)
+uint8_t *base64_encode(uint8_t *bindata, int inlen, uint8_t *out, int *outlen)
 {
-    int32_t _outlen = *outlen;
+    int _outlen = *outlen;
     uint8_t *_out = NULL;
-    int32_t out_pos = 0;
+    int out_pos = 0;
     uint32_t bits_collected = 0;
     uint32_t accumulator = 0;
     int i = 0;
@@ -75,15 +75,15 @@ uint8_t *base64_encode(uint8_t *bindata, int32_t inlen, uint8_t *out, int32_t *o
     return _out;
 }
 
-uint8_t *base64_decode(uint8_t *bindata, int32_t inlen, uint8_t **out, int32_t *outlen)
+uint8_t *base64_decode(uint8_t *bindata, int inlen, uint8_t **out, int *outlen)
 {
-    int32_t _outlen = *outlen;
+    int _outlen = *outlen;
     uint8_t *_out = NULL;
-    int32_t bits_collected = 0;
+    int bits_collected = 0;
     uint32_t accumulator = 0;
-    int32_t out_pos = 0;
-    int32_t c = 0;
-    int32_t i = 0;
+    int out_pos = 0;
+    int c = 0;
+    int i = 0;
 
     if (NULL == *out)
     {
@@ -361,7 +361,7 @@ uint8_t *sha1File(char *filename, uint8_t* out)
     return digest_to_hex(digest, out);
 }
 
-static int _get_addr_by_hostname(int32_t domain, int32_t socktype, const char *hostname, uint16_t port, struct sockaddr_storage *out, int32_t *size)
+static int _get_addr_by_hostname(int domain, int socktype, const char *hostname, uint16_t port, struct sockaddr_storage *out, int *size)
 {
     int iret = -1;
     char sport[16] = {0};
@@ -369,7 +369,7 @@ static int _get_addr_by_hostname(int32_t domain, int32_t socktype, const char *h
     struct addrinfo *result = NULL;
     hints.ai_family = domain; /* Allow IPv4 or IPv6 */
     hints.ai_socktype = socktype; /* Datagram/Stream socket */
-    hints.ai_flags = AI_ALL | AI_CANONNAME | AI_PASSIVE;
+    hints.ai_flags = AI_NUMERICHOST | AI_CANONNAME | AI_PASSIVE;
     hints.ai_protocol = 0;
 
     snprintf(sport, 16, "%d", (int) port);
@@ -388,11 +388,11 @@ static int _get_addr_by_hostname(int32_t domain, int32_t socktype, const char *h
     return iret;
 }
 
-int32_t ut_connect(const char *hostname, uint16_t port)
+int ut_connect(const char *hostname, uint16_t port)
 {
     int fd = socket(AF_INET, SOCK_STREAM, 0);
     struct sockaddr_storage addr_remote = {0};
-    int32_t addr_len = 0;
+    int addr_len = 0;
     int iret = _get_addr_by_hostname(AF_INET, SOCK_STREAM, hostname, port, &addr_remote, &addr_len);
     if (iret >= 0)
     {
@@ -412,30 +412,17 @@ int32_t ut_connect(const char *hostname, uint16_t port)
     }
 }
 
-#ifndef _WIN32
-
+#ifndef ntohll
 uint64_t ntohll(uint64_t val)
 {
-    if (__BYTE_ORDER == __LITTLE_ENDIAN)
-    {
-        return (((uint64_t) htonl((int) ((val << 32) >> 32))) << 32) | (uint32_t) htonl((int) (val >> 32));
-    }
-    else if (__BYTE_ORDER == __BIG_ENDIAN)
-    {
-        return val;
-    }
+    return (((uint64_t) htonl((int) ((val << 32) >> 32))) << 32) | (uint32_t) htonl((int) (val >> 32));
 }
+#endif
 
+#ifndef htonll
 uint64_t htonll(uint64_t val)
 {
-    if (__BYTE_ORDER == __LITTLE_ENDIAN)
-    {
-        return (((uint64_t) htonl((int) ((val << 32) >> 32))) << 32) | (uint32_t) htonl((int) (val >> 32));
-    }
-    else if (__BYTE_ORDER == __BIG_ENDIAN)
-    {
-        return val;
-    }
+    return (((uint64_t) htonl((int) ((val << 32) >> 32))) << 32) | (uint32_t) htonl((int) (val >> 32));
 }
 #endif
 

@@ -76,19 +76,19 @@ typedef struct
     uint32_t fd;
     char *recv_buff;
     char *cont_data;
-    int32_t cont_data_size;
+    int cont_data_size;
 
 } wsContext_t;
 
-int32_t recvData(wsContext_t *ctx,void *buff, int32_t len);
-int32_t sendBinary(wsContext_t *ctx,void *payload, int32_t len);
-int32_t sendUtf8Data(wsContext_t *ctx,void *payload, int32_t len);
-int32_t sendCloseing(wsContext_t *ctx,uint16_t status, const char *reason);
-int32_t sendPing(wsContext_t *ctx,void *payload, int32_t len);
-int32_t sendPong(wsContext_t *ctx,void *payload, int32_t len);
-int32_t wsCreateConnection(wsContext_t  *ctx, const char *url);
+int recvData(wsContext_t *ctx,void *buff, int len);
+int sendBinary(wsContext_t *ctx,void *payload, int len);
+int sendUtf8Data(wsContext_t *ctx,void *payload, int len);
+int sendCloseing(wsContext_t *ctx,uint16_t status, const char *reason);
+int sendPing(wsContext_t *ctx,void *payload, int len);
+int sendPong(wsContext_t *ctx,void *payload, int len);
+int wsCreateConnection(wsContext_t  *ctx, const char *url);
 wsContext_t *wsContextNew();
-int32_t wsContextFree(wsContext_t *ctx);
+int wsContextFree(wsContext_t *ctx);
 
 #ifdef	__cplusplus
 }

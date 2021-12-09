@@ -14,10 +14,10 @@ static url_t *_parse_url(const char *url, url_t *ret)
     return ret;
 }
 
-static int32_t _recv_line(int32_t fd, char *buff)
+static int _recv_line(int fd, char *buff)
 {
-    int32_t i = 0;
-    int32_t iret = 0;
+    int i = 0;
+    int iret = 0;
     char c = 0;
     while ('\n' != c)
     {
@@ -32,9 +32,9 @@ static int32_t _recv_line(int32_t fd, char *buff)
     return i - 1;
 }
 
-static int32_t _validate_headers(int32_t fd, char *key)
+static int _validate_headers(int fd, char *key)
 {
-    int32_t iret = 0;
+    int iret = 0;
     char buff[256] = {0};
     uint32_t status = 0;
     char value[256] = {0};
@@ -42,7 +42,7 @@ static int32_t _validate_headers(int32_t fd, char *key)
     char header_k[256] = {0};
     char header_v[256] = {0};
     char base64str[256] = {0};
-    int32_t base64_len = 0;
+    int base64_len = 0;
     uint8_t sha1[20] = {0};
 
     if (_recv_line(fd, buff) < 0)
@@ -87,7 +87,7 @@ end:
     return iret;
 }
 
-static int32_t _handshake(int32_t fd, const char *host, unsigned short port, const char *resource)
+static int _handshake(int fd, const char *host, unsigned short port, const char *resource)
 {
     int offset = 0;
     char header_str[512] = {0};
@@ -102,7 +102,7 @@ static int32_t _handshake(int32_t fd, const char *host, unsigned short port, con
     return _validate_headers(fd, "x3JJHMbDL1EzLkh9GBhXDw==");
 }
 
-static int32_t _create_frame(ANBF_t *frame, int fin, int rsv1, int rsv2, int rsv3, int opcode, int has_mask, void *data, int len)
+static int _create_frame(ANBF_t *frame, int fin, int rsv1, int rsv2, int rsv3, int opcode, int has_mask, void *data, int len)
 {
     frame->fin = fin;
     frame->rsv1 = rsv1;
@@ -116,7 +116,7 @@ static int32_t _create_frame(ANBF_t *frame, int fin, int rsv1, int rsv2, int rsv
     return 0;
 }
 
-static void *_format_frame(ANBF_t *frame, int32_t *size)
+static void *_format_frame(ANBF_t *frame, int *size)
 {
     int offset = 0;
     char *frame_header = NULL;
@@ -164,9 +164,9 @@ static void *_format_frame(ANBF_t *frame, int32_t *size)
     return frame_header;
 }
 
-static void *_ANBFmask(uint32_t mask_key, void *data, int32_t len)
+static void *_ANBFmask(uint32_t mask_key, void *data, int len)
 {
-    int32_t i = 0;
+    int i = 0;
     uint8_t *_m = (uint8_t *) & mask_key;
     uint8_t *_d = (uint8_t *) data;
     for (; i < len; i++)
@@ -176,13 +176,13 @@ static void *_ANBFmask(uint32_t mask_key, void *data, int32_t len)
     return _d;
 }
 
-static int32_t _recv_restrict(int32_t fd, void *buff, int32_t size)
+static int _recv_restrict(int fd, void *buff, int size)
 {
-    int32_t offset = 0;
+    int offset = 0;
     int iret = 0;
     while (offset < size)
     {
-        iret = recv(fd, ((char *) buff) + offset, (int32_t) (size - offset), 0);
+        iret = recv(fd, ((char *) buff) + offset, (int) (size - offset), 0);
         if (iret > 0)
         {
             offset += iret;
@@ -197,7 +197,7 @@ static int32_t _recv_restrict(int32_t fd, void *buff, int32_t size)
     return offset;
 }
 
-static int32_t _recv_frame(int32_t fd, ANBF_t *frame)
+static int _recv_frame(int fd, ANBF_t *frame)
 {
     uint8_t b1, b2, fin, rsv1, rsv2, rsv3, opcode, has_mask;
     uint64_t frame_length = 0;
@@ -206,7 +206,7 @@ static int32_t _recv_frame(int32_t fd, ANBF_t *frame)
     uint32_t frame_mask = 0;
     uint8_t length_bits = 0;
     uint8_t frame_header[2] = {0};
-    int32_t iret = 0;
+    int iret = 0;
     char *payload = NULL;
 
     iret = _recv_restrict(fd, &frame_header, 2);
@@ -261,8 +261,8 @@ static int32_t _recv_frame(int32_t fd, ANBF_t *frame)
 
     if (frame_length > 0)
     {
-        payload = (char *) malloc((int32_t) frame_length);
-        iret = _recv_restrict(fd, payload, (int32_t) frame_length);
+        payload = (char *) malloc((int) frame_length);
+        iret = _recv_restrict(fd, payload, (int) frame_length);
         if (iret < 0)
         {
             free(payload);
@@ -281,10 +281,10 @@ end:
     return -1;
 }
 
-static int32_t _send(int32_t fd, void *payload, int32_t len, int32_t opcode)
+static int _send(int fd, void *payload, int len, int opcode)
 {
-    int32_t length = 0;
-    int32_t iret = 0;
+    int length = 0;
+    int iret = 0;
     ANBF_t frame = {0};
     char *sendData = NULL;
     _create_frame(&frame, 1, 0, 0, 0, opcode, 0, payload, len);
@@ -295,17 +295,17 @@ static int32_t _send(int32_t fd, void *payload, int32_t len, int32_t opcode)
     return iret;
 }
 
-int32_t sendPing(wsContext_t *ctx, void *payload, int32_t len)
+int sendPing(wsContext_t *ctx, void *payload, int len)
 {
     return _send(ctx->fd, payload, len, OPCODE_PING);
 }
 
-int32_t sendPong(wsContext_t *ctx, void *payload, int32_t len)
+int sendPong(wsContext_t *ctx, void *payload, int len)
 {
     return _send(ctx->fd, payload, len, OPCODE_PONG);
 }
 
-int32_t sendCloseing(wsContext_t *ctx, uint16_t status, const char *reason)
+int sendCloseing(wsContext_t *ctx, uint16_t status, const char *reason)
 {
     char *p = NULL;
     int len = 0;
@@ -316,7 +316,7 @@ int32_t sendCloseing(wsContext_t *ctx, uint16_t status, const char *reason)
     return _send(ctx->fd, payload, len, OPCODE_CLOSE);
 }
 
-int32_t recvData(wsContext_t *ctx, void *buff, int32_t len)
+int recvData(wsContext_t *ctx, void *buff, int len)
 {
     int data_len = -1;
     int iret = -1;
@@ -381,17 +381,17 @@ end:
     return data_len;
 }
 
-int32_t sendUtf8Data(wsContext_t *ctx, void *data, int32_t len)
+int sendUtf8Data(wsContext_t *ctx, void *data, int len)
 {
     return _send(ctx->fd, data, len, OPCODE_TEXT);
 }
 
-int32_t sendBinary(wsContext_t *ctx, void *data, int32_t len)
+int sendBinary(wsContext_t *ctx, void *data, int len)
 {
     return _send(ctx->fd, data, len, OPCODE_BINARY);
 }
 
-int32_t wsCreateConnection(wsContext_t *ctx, const char *url)
+int wsCreateConnection(wsContext_t *ctx, const char *url)
 {
     url_t purl = {0};
     _parse_url(url, &purl);
@@ -409,7 +409,7 @@ wsContext_t *wsContextNew()
     return ctx;
 }
 
-int32_t wsContextFree(wsContext_t *ctx)
+int wsContextFree(wsContext_t *ctx)
 {
     close(ctx->fd);
     free(ctx);

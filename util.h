@@ -22,7 +22,7 @@ extern "C"
 #include <fcntl.h>
 #include <WinSock2.h>
 #include <WS2tcpip.h>
-#pragma comment( lib, "ws2_32" )
+#pragma comment(lib, "ws2_32")
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -40,17 +40,7 @@ typedef SOCKET socket_t;
 #define snprintf _snprintf
 #endif
 #define close closesocket
-#if _MSC_VER >=1600
-// vs2010 or later
 #include <stdint.h>
-#else
-typedef __int8 int8_t;
-typedef unsigned __int8 uint8_t;
-typedef __int32 int32_t;
-typedef unsigned __int32 uint32_t;
-typedef __int64 int64_t;
-typedef unsigned __int64 uint64_t;
-#endif
 #define socketerrno WSAGetLastError()
 #define SOCKET_EAGAIN_EINPROGRESS WSAEINPROGRESS
 #define SOCKET_EWOULDBLOCK WSAEWOULDBLOCK
@@ -79,8 +69,10 @@ typedef unsigned __int64 uint64_t;
 #define SOCKET_EAGAIN_EINPROGRESS EAGAIN
 #define SOCKET_EWOULDBLOCK EWOULDBLOCK
 #endif
-#ifndef _WIN32
+#ifndef ntohll
 uint64_t ntohll(uint64_t val);
+#endif
+#ifndef htonll
 uint64_t htonll(uint64_t val);
 #endif
 typedef struct 
@@ -92,9 +84,9 @@ typedef struct
 
 #define SHA1_DIGEST_SIZE 20
 
-int32_t ut_connect(const char *hostname, uint16_t port);
+int ut_connect(const char *hostname, uint16_t port);
 uint8_t *sha1Buff(const void *buff,size_t lenth, uint8_t *out);
-uint8_t *base64_encode(uint8_t *bindata, int32_t inlen, uint8_t *out, int32_t *outlen);
+uint8_t *base64_encode(uint8_t *bindata, int inlen, uint8_t *out, int *outlen);
 char *str2lower(char *str);
 
 #ifdef	__cplusplus
@@ -102,4 +94,3 @@ char *str2lower(char *str);
 #endif
 
 #endif	/* UTIL_H */
-
